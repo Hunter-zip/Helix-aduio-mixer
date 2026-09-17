@@ -45,9 +45,9 @@ WAVEFORMATEXTENSIBLE makeFloatFormat(double sampleRate, int channels) {
     format.Format.nAvgBytesPerSec = format.Format.nSamplesPerSec * format.Format.nBlockAlign;
     format.Format.cbSize          = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
     format.Samples.wValidBitsPerSample = 32;
-    format.dwChannelMask = (channels == 1) ? SPEAKER_FRONT_CENTER
-                                           : (SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT);
-    format.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
+    format.dwChannelMask = (channels == 1) ? kSpeakerFrontCenter
+                                           : (kSpeakerFrontLeft | kSpeakerFrontRight);
+    format.SubFormat = kSubFormatIeeeFloat;
     return format;
 }
 
@@ -743,7 +743,7 @@ private:
                     static_cast<WORD>(exclusiveFormat.Format.nChannels * 2);
                 exclusiveFormat.Format.nAvgBytesPerSec =
                     exclusiveFormat.Format.nSamplesPerSec * exclusiveFormat.Format.nBlockAlign;
-                exclusiveFormat.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+                exclusiveFormat.SubFormat = kSubFormatPcm;
 
                 supported = client->IsFormatSupported(AUDCLNT_SHAREMODE_EXCLUSIVE,
                                                       &exclusiveFormat.Format, nullptr);

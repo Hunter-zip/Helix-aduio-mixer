@@ -27,14 +27,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # HELIX_WERROR pozostaje wyłączone dla MSVC: /W4 bywa wybredne inaczej niż
+      # GCC/Clang, a nie chcemy, by ostrzeżenie blokowało wydanie. Rygor
+      # "ostrzeżenie = błąd" pilnują zadania GCC i mingw-w64.
       - name: Konfiguracja
-        run: cmake -S engine -B build -DCMAKE_BUILD_TYPE=Release -DHELIX_WERROR=ON
+        run: cmake -S engine -B build -DCMAKE_BUILD_TYPE=Release -DHELIX_WERROR=OFF
 
       - name: Budowanie
         run: cmake --build build --config Release -j
 
       - name: Testy
         run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Zebranie binariów
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifact | Out-Null
+          Copy-Item build/Release/helix-engine.exe artifact/
+          Copy-Item build/Release/helix-cli.exe artifact/
+
+      # Gotowe binarki do pobrania z zakładki Actions — bez budowania u siebie.
+      - name: Publikacja binariów
+        uses: actions/upload-artifact@v4
+        with:
+          name: helix-engine-windows-x64
+          path: artifact/
+          retention-days: 30
 
   engine-cross:
     name: Silnik — cross-kompilacja WASAPI (mingw-w64)

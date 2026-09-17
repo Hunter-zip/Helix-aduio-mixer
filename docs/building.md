@@ -1,5 +1,19 @@
 # Budowanie i uruchamianie
 
+## Najkrótsza droga
+
+| System | Komenda |
+|---|---|
+| Windows | dwuklik w `start.bat` (testy: `test.bat`) |
+| Linux / macOS | `./start.sh` |
+
+Skrypty sprawdzają wymagania, budują silnik, instalują zależności interfejsu
+i uruchamiają aplikację. Budują z `HELIX_WERROR=OFF` — ostrzeżenie kompilatora
+nie ma prawa zablokować uruchomienia programu na cudzej maszynie.
+
+Reszta tego dokumentu opisuje, co te skrypty robią pod spodem, i jak zejść
+niżej, gdy chcesz nad czymś zapanować ręcznie.
+
 ## Wymagania
 
 | Element | Wersja |

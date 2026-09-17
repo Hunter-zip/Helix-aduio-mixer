@@ -55,19 +55,54 @@ bloków pełnego przetwarzania.
 
 Szczegóły: [`docs/architecture.md`](docs/architecture.md).
 
-## Szybki start
+## Uruchomienie
+
+### Windows — dwa kliknięcia
+
+1. Pobierz repozytorium (**Code → Download ZIP** albo `git clone`) i rozpakuj.
+2. Kliknij dwukrotnie **`start.bat`**.
+
+Skrypt sam sprawdzi wymagania, zbuduje silnik, pobierze zależności interfejsu
+i uruchomi aplikację. Pierwsze uruchomienie trwa kilka minut (kompilacja +
+pobranie Electrona), kolejne są natychmiastowe.
+
+Potrzebujesz jednorazowo dwóch rzeczy — jeśli ich nie masz, skrypt powie
+którą i poda link:
+
+| Wymaganie | Skąd |
+|---|---|
+| CMake (z opcją „Add to PATH") | [cmake.org/download](https://cmake.org/download/) |
+| Visual Studio 2022 Build Tools, komponent „Desktop development with C++" | [visualstudio.microsoft.com/downloads](https://visualstudio.microsoft.com/downloads/) |
+| Node.js LTS | [nodejs.org](https://nodejs.org/) |
+
+Testy: **`test.bat`**.
+
+### Bez budowania — gotowe binarki
+
+Zakładka **Actions** → dowolny zielony przebieg → artefakt
+`helix-engine-windows-x64`. W środku `helix-engine.exe` i `helix-cli.exe`
+gotowe do uruchomienia.
+
+### Linux / macOS
 
 ```bash
-# silnik
+./start.sh
+```
+
+Silnik pracuje wtedy na backendzie programowym — symuluje urządzenia, więc
+DSP, routing, profile i interfejs działają bez sprzętu Windows.
+
+### Ręcznie
+
+```bash
 cmake -S engine -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ctest --test-dir build --output-on-failure
 
-# interfejs
 cd ui && npm install && npm start
 ```
 
-Bez GUI też działa:
+### Sam silnik, bez GUI
 
 ```bash
 ./build/helix-engine

@@ -15,7 +15,10 @@ endif()
 
 add_library(helix_warnings INTERFACE)
 if (MSVC)
-    target_compile_options(helix_warnings INTERFACE /W4 /permissive- $<$<BOOL:${HELIX_WERROR}>:/WX>)
+    # /utf-8 jest obowiązkowe: źródła i komunikaty są w UTF-8, a MSVC bez tego
+    # interpretuje je wg strony kodowej systemu i psuje polskie znaki.
+    target_compile_options(helix_warnings INTERFACE
+        /W4 /permissive- /utf-8 $<$<BOOL:${HELIX_WERROR}>:/WX>)
 else()
     target_compile_options(helix_warnings INTERFACE
         -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion
@@ -72,8 +75,17 @@ if (UNIX AND NOT APPLE)
 endif()
 
 if (WIN32)
-    target_link_libraries(helix_engine PUBLIC ole32 oleaut32 uuid winmm avrt ksuser mfplat mmdevapi ws2_32
-                                        propsys setupapi advapi32 psapi user32 shell32)
+    # Tylko biblioteki, z których faktycznie korzystamy — każda nadmiarowa
+    # pozycja to ryzyko, że zabraknie jej w danym zestawie SDK.
+    #   ole32/oleaut32 — COM, PropVariant, CoTaskMemFree
+    #   uuid           — identyfikatory interfejsów
+    #   avrt           — AvSetMmThreadCharacteristics (priorytet wątku audio)
+    #   mmdevapi       — ActivateAudioInterfaceAsync (przechwytywanie per proces)
+    #   ws2_32         — gniazda serwera sterującego
+    #   advapi32       — rejestr (moduł sterownika)
+    #   user32         — RegisterHotKey i pętla komunikatów skrótów
+    target_link_libraries(helix_engine PUBLIC
+        ole32 oleaut32 uuid avrt mmdevapi ws2_32 advapi32 user32)
     target_compile_definitions(helix_engine PUBLIC UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN)
 endif()
 

@@ -16,8 +16,9 @@
 
 #include <audioclient.h>
 #include <audiopolicy.h>
-#include <functiondiscoverykeys_devpkey.h>
 #include <mmdeviceapi.h>
+#include <mmreg.h>
+#include <propidl.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -65,6 +66,23 @@ typedef struct HELIX_AUDIOCLIENT_ACTIVATION_PARAMS {
 #endif
 
 namespace helix::platform {
+
+// Podtypy formatu i maski kanałów definiujemy samodzielnie zamiast ciągnąć
+// `ksmedia.h`. Te wartości są częścią stabilnego ABI Windows, a ich lokalizacja
+// w nagłówkach różni się między Windows SDK a mingw-w64 — jedno źródło prawdy
+// oszczędza kłopotów przy każdym z nich.
+
+/// KSDATAFORMAT_SUBTYPE_PCM — {00000001-0000-0010-8000-00AA00389B71}
+inline const GUID kSubFormatPcm = {
+    0x00000001, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
+
+/// KSDATAFORMAT_SUBTYPE_IEEE_FLOAT — {00000003-0000-0010-8000-00AA00389B71}
+inline const GUID kSubFormatIeeeFloat = {
+    0x00000003, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
+
+inline constexpr DWORD kSpeakerFrontLeft   = 0x1;
+inline constexpr DWORD kSpeakerFrontRight  = 0x2;
+inline constexpr DWORD kSpeakerFrontCenter = 0x4;
 
 /// Prosty wskaźnik COM z licznikiem referencji.
 template <typename T>

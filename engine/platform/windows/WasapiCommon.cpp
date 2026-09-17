@@ -66,9 +66,9 @@ SampleFormat detectSampleFormat(const WAVEFORMATEX* format) noexcept {
     if (tag == WAVE_FORMAT_EXTENSIBLE && format->cbSize >= 22) {
         const auto* extensible = reinterpret_cast<const WAVEFORMATEXTENSIBLE*>(format);
         validBits = extensible->Samples.wValidBitsPerSample;
-        if (IsEqualGUID(extensible->SubFormat, KSDATAFORMAT_SUBTYPE_IEEE_FLOAT))
+        if (IsEqualGUID(extensible->SubFormat, kSubFormatIeeeFloat))
             tag = WAVE_FORMAT_IEEE_FLOAT;
-        else if (IsEqualGUID(extensible->SubFormat, KSDATAFORMAT_SUBTYPE_PCM))
+        else if (IsEqualGUID(extensible->SubFormat, kSubFormatPcm))
             tag = WAVE_FORMAT_PCM;
         else
             return SampleFormat::Unsupported;
