@@ -1,0 +1,31 @@
+# Build
+build/
+build-*/
+out/
+cmake-build-*/
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.exe
+*.pdb
+*.ilk
+compile_commands.json
+
+# Node / Electron
+node_modules/
+dist/
+package-lock.json
+npm-debug.log*
+
+# Runtime state
+*.log
+.helix-runtime/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

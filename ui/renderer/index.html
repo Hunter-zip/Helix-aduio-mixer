@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:">
+  <title>Helix Audio Mixer</title>
+  <link rel="stylesheet" href="styles/app.css">
+</head>
+<body>
+
+<header class="titlebar" id="titlebar">
+  <div class="brand">
+    <span class="brand-mark"></span>
+    <span class="brand-name">HELIX</span>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab is-active" data-view="mixer">Mikser</button>
+    <button class="tab" data-view="routing">Routing</button>
+    <button class="tab" data-view="devices">Urządzenia</button>
+    <button class="tab" data-view="profiles">Profile</button>
+  </nav>
+
+  <div class="titlebar-right">
+    <label class="profile-picker">
+      <span>Profil</span>
+      <select id="profile-select"></select>
+    </label>
+
+    <div class="status-pills">
+      <span class="pill" id="pill-format">—</span>
+      <span class="pill" id="pill-latency">—</span>
+      <span class="pill" id="pill-cpu">—</span>
+      <span class="pill pill-state" id="pill-connection">łączenie…</span>
+    </div>
+
+    <div class="window-buttons">
+      <button class="win-btn" id="btn-pin" title="Zawsze na wierzchu">◇</button>
+      <button class="win-btn" id="btn-minimize" title="Minimalizuj">–</button>
+      <button class="win-btn" id="btn-hide" title="Ukryj do zasobnika">▾</button>
+      <button class="win-btn win-btn-close" id="btn-close" title="Zamknij">×</button>
+    </div>
+  </div>
+</header>
+
+<main class="workspace">
+  <!-- ── Mikser ─────────────────────────────────────────────── -->
+  <section class="view is-active" data-view="mixer">
+    <div class="mixer-layout">
+      <div class="strips" id="strips"></div>
+      <aside class="inspector" id="inspector">
+        <div class="inspector-empty">Wybierz kanał, aby zobaczyć jego ustawienia</div>
+      </aside>
+    </div>
+
+    <footer class="master-bar">
+      <div class="master-label">MASTER</div>
+      <div class="master-meter"><canvas id="master-meter" width="240" height="18"></canvas></div>
+      <input type="range" id="master-volume" class="master-fader" min="0" max="100" value="85">
+      <span class="master-value" id="master-value">85%</span>
+      <button class="chip" id="master-mute">MUTE</button>
+      <button class="chip" id="master-limiter">LIMITER</button>
+      <label class="master-output">
+        <span>Wyjście</span>
+        <select id="master-device"></select>
+      </label>
+    </footer>
+  </section>
+
+  <!-- ── Routing ────────────────────────────────────────────── -->
+  <section class="view" data-view="routing">
+    <div class="panel">
+      <h2>Macierz routingu</h2>
+      <p class="hint">Każdy kanał może iść na dowolną liczbę wyjść jednocześnie.
+         Zmiany działają natychmiast, bez przerwy w dźwięku.</p>
+      <div class="matrix-wrap"><table class="matrix" id="routing-matrix"></table></div>
+    </div>
+  </section>
+
+  <!-- ── Urządzenia ─────────────────────────────────────────── -->
+  <section class="view" data-view="devices">
+    <div class="panel-grid">
+      <div class="panel">
+        <h2>Format pracy silnika</h2>
+        <div class="form-row">
+          <label for="setting-samplerate">Częstotliwość próbkowania</label>
+          <select id="setting-samplerate">
+            <option value="44100">44,1 kHz</option>
+            <option value="48000">48 kHz</option>
+            <option value="96000">96 kHz</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="setting-block">Rozmiar bufora</label>
+          <select id="setting-block">
+            <option value="64">64 ramki</option>
+            <option value="96">96 ramek</option>
+            <option value="128">128 ramek</option>
+            <option value="192">192 ramki</option>
+            <option value="256">256 ramek</option>
+            <option value="480">480 ramek</option>
+            <option value="960">960 ramek</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="setting-channels">Liczba kanałów</label>
+          <select id="setting-channels">
+            <option value="1">Mono</option>
+            <option value="2">Stereo</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="setting-exclusive">Tryb wyłączny</label>
+          <input type="checkbox" id="setting-exclusive">
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="apply-settings">Zastosuj</button>
+          <span class="hint" id="settings-latency"></span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Wyjścia</h2>
+        <div id="bus-devices" class="device-list"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Wejścia i źródła</h2>
+        <div id="source-devices" class="device-list"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Wirtualne urządzenia</h2>
+        <div id="virtual-devices" class="device-list"></div>
+        <div class="driver-box" id="driver-box"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Profile ────────────────────────────────────────────── -->
+  <section class="view" data-view="profiles">
+    <div class="panel-grid">
+      <div class="panel">
+        <h2>Profile</h2>
+        <div class="profile-list" id="profile-list"></div>
+        <div class="form-actions">
+          <input type="text" id="profile-name" class="text-input" placeholder="Nazwa profilu">
+          <button class="btn btn-primary" id="profile-save">Zapisz bieżący stan</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Aplikacje</h2>
+        <p class="hint">Przypisanie zostaje zapamiętane — po ponownym uruchomieniu
+           aplikacja wróci na ten sam kanał.</p>
+        <div id="application-list" class="device-list"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Skróty klawiszowe</h2>
+        <div id="hotkey-list" class="device-list"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Automatyzacja</h2>
+        <div id="automation-list" class="device-list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast-stack" id="toasts"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

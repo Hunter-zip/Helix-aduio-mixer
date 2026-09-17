@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  engine-linux:
+    name: Silnik — Linux (GCC, testy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Konfiguracja
+        run: cmake -S engine -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHELIX_WERROR=ON
+
+      - name: Budowanie
+        run: cmake --build build -j
+
+      - name: Testy
+        run: ctest --test-dir build --output-on-failure
+
+  engine-windows:
+    name: Silnik — Windows (MSVC)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Konfiguracja
+        run: cmake -S engine -B build -DCMAKE_BUILD_TYPE=Release -DHELIX_WERROR=ON
+
+      - name: Budowanie
+        run: cmake --build build --config Release -j
+
+      - name: Testy
+        run: ctest --test-dir build -C Release --output-on-failure
+
+  engine-cross:
+    name: Silnik — cross-kompilacja WASAPI (mingw-w64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalacja toolchaina
+        run: sudo apt-get update && sudo apt-get install -y g++-mingw-w64-x86-64
+
+      - name: Konfiguracja
+        run: >
+          cmake -S engine -B build-win
+          -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/engine/cmake/mingw-w64-x86_64.cmake
+          -DCMAKE_BUILD_TYPE=Release -DHELIX_WERROR=ON
+
+      - name: Budowanie
+        run: cmake --build build-win -j
+
+  sanitizers:
+    name: Silnik — ASan/UBSan i TSan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: address-undefined
+            flags: "-fsanitize=address,undefined -fno-omit-frame-pointer -g -O1"
+          - name: thread
+            flags: "-fsanitize=thread -g -O1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Konfiguracja (${{ matrix.name }})
+        run: >
+          cmake -S engine -B build-san -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHELIX_WERROR=OFF
+          -DCMAKE_CXX_FLAGS="${{ matrix.flags }}"
+          -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.flags }}"
+
+      - name: Budowanie
+        run: cmake --build build-san -j --target helix_tests
+
+      # Test kontraktu RT podmienia globalny operator new, więc nie da się go
+      # sensownie łączyć z sanitizerami — uruchamiamy tylko zestaw główny.
+      - name: Testy pod sanitizerem
+        run: ./build-san/tests/helix_tests
+        env:
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+          TSAN_OPTIONS: halt_on_error=1
+
+  ui:
+    name: GUI — składnia i test integracyjny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Budowanie silnika
+        run: |
+          cmake -S engine -B build -DCMAKE_BUILD_TYPE=Release -DHELIX_BUILD_TESTS=OFF
+          cmake --build build -j
+
+      - name: Sprawdzenie składni JS
+        working-directory: ui
+        run: |
+          for file in main.js preload.js src/*.js test/*.js renderer/js/*.js \
+                      renderer/js/views/*.js renderer/js/components/*.js; do
+            node --check "$file"
+          done
+
+      - name: Test integracyjny GUI ↔ silnik
+        working-directory: ui
+        run: node test/integration.js ../build/helix-engine
