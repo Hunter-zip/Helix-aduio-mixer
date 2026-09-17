@@ -28,6 +28,7 @@ EngineController::Options testOptions(const std::string& directory) {
     EngineController::Options options;
     options.configDirectory = directory;
     options.forceNullBackend = true;
+    options.forceManualAppDetector = true;   // na Windows domyślny jest detektor WASAPI
     options.createDefaultProfiles = false;
     options.autoStart = false;
     options.enableHotkeys = false;

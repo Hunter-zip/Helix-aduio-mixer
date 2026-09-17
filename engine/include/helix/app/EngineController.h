@@ -33,6 +33,10 @@ public:
         bool   createDefaultProfiles = true;
         bool   autoStart = true;
         bool   forceNullBackend = false; ///< wymuś backend programowy (testy, tryb awaryjny)
+        /// Wymuś detektor aplikacji sterowany programowo zamiast systemowego.
+        /// Pozwala testować reguły automatyzacji identycznie na każdej platformie,
+        /// bez zależności od sesji audio żywych procesów.
+        bool   forceManualAppDetector = false;
         double sampleRate  = kDefaultSampleRate;
         int    blockFrames = kDefaultBlockFrames;
         int    channels    = 2;

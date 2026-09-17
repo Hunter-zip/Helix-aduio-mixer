@@ -10,6 +10,7 @@
 #include <psapi.h>
 
 #include <map>
+#include <memory>
 #include <mutex>
 #include <vector>
 

@@ -8,6 +8,7 @@
 
 #include "WasapiCommon.h"
 
+#include <algorithm>
 #include <atomic>
 #include <cstring>
 #include <mutex>

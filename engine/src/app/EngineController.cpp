@@ -78,7 +78,8 @@ Status EngineController::initialize(Options options) {
         [this](const JsonValue& document) { return applyProfile(document); });
 
     hotkeys_     = std::make_unique<HotkeyManager>();
-    appDetector_ = createPlatformAppDetector();
+    appDetector_ = options_.forceManualAppDetector ? std::make_unique<ManualAppDetector>()
+                                                   : createPlatformAppDetector();
 
     core::EngineFormat format;
     format.sampleRate  = options_.sampleRate;
