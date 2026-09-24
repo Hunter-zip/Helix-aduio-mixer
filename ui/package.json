@@ -1,0 +1,39 @@
+{
+  "name": "helix-audio-mixer",
+  "version": "0.2.0",
+  "description": "Helix Audio Mixer — interfejs użytkownika",
+  "main": "main.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "cross-env HELIX_DEV=1 electron .",
+    "dist": "electron-builder",
+    "test": "node test/integration.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.helix.audiomixer",
+    "productName": "Helix Audio Mixer",
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "renderer/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../build/helix-engine.exe",
+        "to": "engine/helix-engine.exe"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    }
+  }
+}
